@@ -7,12 +7,24 @@ Citations:
 
 package model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Model {
+    private int gameStageIndex;
+    private List<Stage> stages;
+    private int gameStep;
+    private TextParser textParser;
+
+    public Model() {
+        this.gameStageIndex = 0;
+        this.stages = new ArrayList<>();
+
+    }
+
+    private void initStages() {
+        // Stage 1 (index 0)
+        
+    }
 
     public class Stage {
         private String name;
