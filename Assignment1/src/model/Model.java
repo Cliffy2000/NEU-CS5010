@@ -7,21 +7,69 @@ Citations:
 
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class Model {
-    int gameStep = 0;   // Tracks the number of moves by the player, is used to measure time passed
-    int gameTime = 0;   // This is the day / night tracker, 0 is for day and 1 for night.
-    String gameScene = "Dock";  // Scenes include Dock / Sea / Island / Market
+    public class Stage {
+        private String name;
+        private Set<String> verbs;
+        private Map<String, Map<String, String>> nouns;
 
-    List<Interactable> inventory;
+        public Stage(String name, Set<String> verbs, Map<String, Map<String, String>> nouns) {
+            this.name = name;
+            this.verbs = verbs;
+            this.nouns = nouns;
+        }
 
-    public void init() {
-        inventory = new ArrayList<Interactable>();
-    }
+        public String getName() {
+            return this.name;
+        }
 
-    public void parseText(String userInput) {
+        public Set<String> getVerbs() {
+            return this.verbs;
+        }
 
+        public void addVerb(String verb) {
+            this.verbs.add(verb);
+        }
+
+        public Map<String, Map<String, String>> getNouns() {
+            return this.nouns;
+        }
+
+        public void addVerbtoNoun(String noun, String verb, String response) {
+            if (this.nouns.containsKey((noun))) {
+                // Add or overwrite if the noun exists
+                nouns.get(noun).put(verb, response);
+            } else {
+                // create new noun before adding the verb that should be added to it
+                Map<String, String> verbResponse = new HashMap<>();
+                verbResponse.put(verb, response);
+                nouns.put(noun, verbResponse);
+            }
+            // Make sure the verb is included in the overall stage verb list
+            addVerb(verb);
+        }
+
+        public String getResponse(String noun, String verb) {
+            if (nouns.containsKey(noun) && nouns.get(noun).containsKey(verb)) {
+                return nouns.get(noun).get(verb);
+            }
+            // This message should not appear as the parsed text shouldn't fail the if statement
+            // Mainly as precaution
+            return "Invalid interaction!";
+        }
+
+        public void removeNoun(String noun) {
+            nouns.remove(noun);
+        }
+
+        public void removeVerbFromNoun(String noun, String verb) {
+            if (nouns.containsKey(noun)) {
+                nouns.get(noun).remove(verb);
+            }
+        }
     }
 }
