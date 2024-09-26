@@ -8,10 +8,12 @@ Citations:
 package model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class Model {
+
     public class Stage {
         private String name;
         private Set<String> verbs;
@@ -70,6 +72,47 @@ public class Model {
             if (nouns.containsKey(noun)) {
                 nouns.get(noun).remove(verb);
             }
+        }
+    }
+
+    public class TextParser {
+        private List<String> verbs;
+        private List<String> nouns;
+
+        public TextParser(List<String> verbs, List<String> nouns) {
+            this.verbs = verbs;
+            this.nouns = nouns;
+        }
+
+        public void setVerbs(List<String> verbs) {
+            this.verbs = verbs;
+        }
+
+        public void setNouns(List<String> nouns) {
+            this.nouns = nouns;
+        }
+
+        public String[] parse(String userInput) {
+            // TODO: Remove trailing punctuations
+            String[] words = userInput.toLowerCase().split(" ");
+            String userVerb = "not found";
+            String userNoun = "not found";
+
+            for (String word : words) {
+                if (nouns.contains(word)) {
+                    userNoun = word;
+                    break;
+                }
+            }
+
+            for (String word : words) {
+                if (verbs.contains(word)) {
+                    userVerb = word;
+                    break;
+                }
+            }
+
+            return new String[] {userVerb, userNoun};
         }
     }
 }
