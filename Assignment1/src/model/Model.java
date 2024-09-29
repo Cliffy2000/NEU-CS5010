@@ -33,7 +33,15 @@ public class Model {
         this.gameStageIndex = 0;
         this.stages = new ArrayList<>();
         initStages();
-        this.textParser = new TextParser(new HashSet<>(this.stages.get(0).getVerbs()), this.stages.get(0).getNouns().keySet());
+        this.textParser = new TextParser(new HashSet<>(this.stages.get(2).getVerbs()), this.stages.get(0).getNouns().keySet());
+    }
+
+    public TextParser getTextParser() {
+        return this.textParser;
+    }
+
+    public Stage getCurrentStage() {
+        return this.stages.get(this.gameStageIndex);
     }
 
     private void initStages() {
@@ -78,9 +86,9 @@ public class Model {
 
         // Stage 3 (index 2)
         // Finding the treasure on the island
-        Set<String> stage3Verbs = new HashSet<>(Arrays.asList("look"));
+        Set<String> stage3Verbs = new HashSet<>(Arrays.asList("look", "walk"));
         Map<String, Map<String, String>> stage3Nouns = new HashMap<>() {{
-            put("around", new HashMap<>(){{
+            put("beach", new HashMap<>(){{
                 put("look", "You see a trail of footprints, a suspiciously moist patch of sand, and a coconut.");
                 put("walk", "You see a trail of footprints, a suspiciously moist patch of sand, and a coconut.");
             }});
@@ -89,7 +97,11 @@ public class Model {
         this.stages.add(stage3);
     }
 
-    public void action(String verb, String noun) {
+    public String getResponse(String noun, String verb) {
+        return this.stages.get(this.gameStageIndex).nouns.get(noun).get(verb);
+    }
+
+    public void action(String noun, String verb) {
         // switch function that directs to specific stage
         switch (gameStageIndex) {
             case 0:
@@ -110,8 +122,6 @@ public class Model {
             case "around":
                 if (verb.equals("look") && !flag_onShip) {
                     stage.addVerbToNoun("rum", "take", "You decided to bring the rum with you onto the ship.");
-                    stage.removeNoun("around");
-                    stage.addVerbToNoun("around", "look", "You see your ship docked nearby.");
                 }
                 break;
             case "ship":
@@ -129,9 +139,11 @@ public class Model {
                 // added switch case for clarity, talking to crew on this stage does not affect game flow
                 break;
             case "rum":
-                if (verb.equals("take")) {
+                if (verb.equals("take") && !flag_onShip) {
                     this.flag_hasRum = true;
                     stage.removeNoun("rum");
+                    stage.removeNoun("around");
+                    stage.addVerbToNoun("around", "look", "You see your ship docked nearby.");
                     this.stages.get(1).addVerbToNoun("rum", "distribute", "You gave the rum to the crew members, lifting everyone's spirits. ");
                     this.stages.get(1).addVerbToNoun("rum", "drink", "You drank the rum, it tastes good. ");
                 }
@@ -201,9 +213,9 @@ public class Model {
 
     public void actionStage3(Stage stage, String noun, String verb) {
         switch (noun) {
-            case "around":
+            case "beach":
                 if (verb.equals("look") || verb.equals("walk")) {
-                    stage.removeNoun("around");
+                    stage.removeNoun("beach");
                     stage.addVerbToNoun("footprints", "follow", "You follow the footsteps to see a bag half buried in the ground.");
                     stage.addVerbToNoun("sand", "dig", "You dig a hole only to get a strong rotting smell and a pile of rotten fish. ");
                     stage.addVerbToNoun("coconut", "pick", "You picked up a coconut, but it seems perfectly normal.");
@@ -232,6 +244,27 @@ public class Model {
         }
     }
 
+    public int getProgression() {
+        if (this.gameStageIndex == 0 && this.flag_stage1Complete) {
+            // move from stage 1 to 2
+            this.gameStageIndex = 1;
+            return 0;
+        } else if (this.gameStageIndex == 1 && this.flag_stage2Complete) {
+            // move from stage 2 to 3
+            this.gameStageIndex = 2;
+            return 1;
+        } else if (this.gameStageIndex == 2 && this.flag_stage3Complete) {
+            // game completed case
+            return 2;
+        } else {
+            // default pass case
+            return -1;
+        }
+    }
+
+    public String[] parseInput(String userInput) {
+        return this.textParser.parse(userInput);
+    }
 
     public class Stage {
         private String name;
@@ -321,7 +354,6 @@ public class Model {
     }
 
     public class TextParser {
-        // TODO: The sets are not updated along with the stage
         private Set<String> verbs;
         private Set<String> nouns;
 
@@ -339,10 +371,16 @@ public class Model {
         }
 
         public String[] parse(String userInput) {
-            // TODO: Remove trailing punctuations
             String[] words = userInput.toLowerCase().split(" ");
             String userVerb = "not found";
             String userNoun = "not found";
+
+            // Loop through words and remove only trailing periods
+            for (int i = 0; i < words.length; i++) {
+                if (words[i].endsWith(".")) {
+                    words[i] = words[i].substring(0, words[i].length() - 1);
+                }
+            }
 
             for (String word : words) {
                 if (this.nouns.contains(word)) {

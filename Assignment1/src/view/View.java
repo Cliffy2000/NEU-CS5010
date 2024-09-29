@@ -17,4 +17,12 @@ public class View {
         System.out.println("Congratulations! You have found the treasure!");
         System.out.println("I hope you enjoyed the game!");
     }
+
+    public void invalidInput() {
+        System.out.println("It seems that nothing happened, try a different action");
+    }
+
+    public void printResponse(String response) {
+        System.out.println(response);
+    }
 }
