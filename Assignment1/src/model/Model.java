@@ -133,6 +133,7 @@ public class Model {
                     this.flag_hasRum = true;
                     stage.removeNoun("rum");
                     this.stages.get(1).addVerbToNoun("rum", "distribute", "You gave the rum to the crew members, lifting everyone's spirits. ");
+                    this.stages.get(1).addVerbToNoun("rum", "drink", "You drank the rum, it tastes good. ");
                 }
                 break;
             case "wheel":
@@ -159,7 +160,10 @@ public class Model {
                     this.flag_shipSpeed += 1;
                     stage.removeNoun("rum");
                     break;
-                } // TODO: drink rum
+                } else if (verb.equals("drink")) {
+                    stage.removeNoun("rum");
+                    break;
+                }
             case "map":
                 if (verb.equals("check")) {
                     if (!this.flag_adjustHeading) {
