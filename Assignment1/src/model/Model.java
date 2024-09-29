@@ -12,15 +12,28 @@ import java.util.*;
 public class Model {
     private int gameStageIndex;
     private List<Stage> stages;
-    private int gameStep;
     private TextParser textParser;
+
+    private boolean flag_hasRum = false;
+    private boolean flag_onShip = false;
+    private boolean flag_sailUp = false;
+    private boolean flag_holdWheel = false;
+    private boolean flag_stage1Complete = false;
+
+    private boolean flag_gaveRum = false;
+    private boolean flag_adjustSail = false;
+    private boolean flag_adjustHeading = false;
+    private int flag_shipSpeed = 1;
+    private int flag_travelDistance = 0;
+    private boolean flag_stage2Complete = false;
+
+    private boolean flag_stage3Complete = false;
 
     public Model() {
         this.gameStageIndex = 0;
         this.stages = new ArrayList<>();
         initStages();
-        this.gameStep = 0;
-        this.textParser = new TextParser(new HashSet<>(stages.get(0).getVerbs()), stages.get(0).getNouns().keySet());
+        this.textParser = new TextParser(new HashSet<>(this.stages.get(0).getVerbs()), this.stages.get(0).getNouns().keySet());
     }
 
     private void initStages() {
@@ -50,9 +63,7 @@ public class Model {
         Set<String> stage2Verbs = new HashSet<>(Arrays.asList("sail", "check", "adjust"));
         Map<String, Map<String, String>> stage2Nouns = new HashMap<>() {{
             put("ship", new HashMap<>() {{
-                put("sail-slow", "Your ship is sailing towards the destination.");
-                put("sail-medium", "Your ship is sailing steadily along the wind towards your destination.");
-                put("sail-fast", "Your are approaching your destination rapidly.");
+                put("sail", "Your ship is sailing towards the destination.");
             }});
             put("map", new HashMap<>() {{
                 put("check", "You checked the map to gain a more precise heading.");
@@ -70,12 +81,153 @@ public class Model {
         Set<String> stage3Verbs = new HashSet<>(Arrays.asList("look"));
         Map<String, Map<String, String>> stage3Nouns = new HashMap<>() {{
             put("around", new HashMap<>(){{
-                put("around", "You see a trail of footsteps, a suspiciously moist patch of sand, and a coconut.");
+                put("look", "You see a trail of footprints, a suspiciously moist patch of sand, and a coconut.");
+                put("walk", "You see a trail of footprints, a suspiciously moist patch of sand, and a coconut.");
             }});
         }};
         Stage stage3 = new Stage("Island", stage3Verbs, stage3Nouns);
         this.stages.add(stage3);
     }
+
+    public void action(String verb, String noun) {
+        // switch function that directs to specific stage
+        switch (gameStageIndex) {
+            case 0:
+                actionStage1(this.stages.get(0), noun, verb);
+            case 1:
+                actionStage2(this.stages.get(1), noun, verb);
+            case 2:
+                actionStage3(this.stages.get(2), noun, verb);
+            default:
+                // Error catching default block
+                break;
+        }
+    }
+
+    public void actionStage1(Stage stage, String noun, String verb) {
+        // Manages the effects verbs have on the stage
+        switch (noun) {
+            case "around":
+                if (verb.equals("look") && !flag_onShip) {
+                    stage.addVerbToNoun("rum", "take", "You decided to bring the rum with you onto the ship.");
+                    stage.removeNoun("around");
+                    stage.addVerbToNoun("around", "look", "You see your ship docked nearby.");
+                }
+                break;
+            case "ship":
+                if (verb.equals("board")) {
+                    flag_onShip = true;
+                    // major change to the stage as boarding the ship would change the surroundings of the player
+                    stage.removeNoun("around");
+                    stage.removeNoun("ship");
+                    stage.addVerbToNoun("around", "look", "You stand on the deck in front of the wheel, your crew on your side and the sails tied neatly together.");
+                    stage.addVerbToNoun("wheel", "hold", "You feel the strength of the ship coming to you as you hold the wheel firmly.");
+                    stage.addVerbToNoun("sails", "ready", "You order the crew to ready the sails");
+                }
+                break;
+            case "crew":
+                // added switch case for clarity, talking to crew on this stage does not affect game flow
+                break;
+            case "rum":
+                if (verb.equals("take")) {
+                    this.flag_hasRum = true;
+                    stage.removeNoun("rum");
+                    this.stages.get(1).addVerbToNoun("rum", "distribute", "You gave the rum to the crew members, lifting everyone's spirits. ");
+                }
+                break;
+            case "wheel":
+                this.flag_holdWheel = true;
+                break;
+            case "sails":
+                this.flag_sailUp = true;
+                stage.removeNoun("around");
+                stage.addVerbToNoun("around", "look", "You stand on the deck of your ship, the crew at their posts ready for departure.");
+                break;
+        }
+
+        // Completed the stage
+        if (flag_holdWheel && flag_sailUp) {
+            this.flag_stage1Complete = true;
+        }
+    }
+
+    public void actionStage2(Stage stage, String noun, String verb) {
+        switch (noun) {
+            case "rum":
+                if (verb.equals("distribute")) {
+                    this.flag_gaveRum = true;
+                    this.flag_shipSpeed += 1;
+                    stage.removeNoun("rum");
+                    break;
+                } // TODO: drink rum
+            case "map":
+                if (verb.equals("check")) {
+                    if (!this.flag_adjustHeading) {
+                        this.flag_adjustHeading = true;
+                        this.flag_shipSpeed += 1;
+                    }
+                }
+                break;
+            case "sails":
+                if (verb.equals("adjust")) {
+                    if (!this.flag_adjustSail) {
+                        this.flag_adjustSail = true;
+                        this.flag_shipSpeed += 1;
+                    }
+                }
+                break;
+            case "ship":
+                if (verb.equals("sail")) {
+                    if (this.flag_shipSpeed == 1) {
+                        this.flag_travelDistance += 2;
+                    } else if (this.flag_shipSpeed < 4) {
+                        this.flag_travelDistance += 5;
+                    } else if (this.flag_shipSpeed == 4) {
+                        this.flag_travelDistance += 10;
+                    }
+                }
+                break;
+        }
+
+        // travel enough distance to reach the next stage
+        if (this.flag_travelDistance >= 40) {
+            this.flag_stage2Complete = true;
+        }
+    }
+
+    public void actionStage3(Stage stage, String noun, String verb) {
+        switch (noun) {
+            case "around":
+                if (verb.equals("look") || verb.equals("walk")) {
+                    stage.removeNoun("around");
+                    stage.addVerbToNoun("footprints", "follow", "You follow the footsteps to see a bag half buried in the ground.");
+                    stage.addVerbToNoun("sand", "dig", "You dig a hole only to get a strong rotting smell and a pile of rotten fish. ");
+                    stage.addVerbToNoun("coconut", "pick", "You picked up a coconut, but it seems perfectly normal.");
+                    stage.addVerbToNoun("coconut", "break", "You break a coconut and drank the coconut water");
+                }
+                break;
+            case "footprints":
+                if (verb.equals("follow")) {
+                    stage.removeNoun("footprints");
+                    stage.addVerbToNoun("bag", "dig", "You dig up the bag and find a bag of ancient gold coins.");
+                }
+                break;
+            case "sand":
+                if (verb.equals("dig")) {
+                    stage.removeNoun("sand");
+                }
+                break;
+            case "coconut":
+                break;
+            case "bag":
+                if (verb.equals("dig")) {
+                    this.flag_stage3Complete = true;
+                    stage.removeNoun("bag");
+                }
+                break;
+        }
+    }
+
 
     public class Stage {
         private String name;
@@ -104,23 +256,23 @@ public class Model {
             return this.nouns;
         }
 
-        public void addVerbtoNoun(String noun, String verb, String response) {
+        public void addVerbToNoun(String noun, String verb, String response) {
             if (this.nouns.containsKey((noun))) {
                 // Add or overwrite if the noun exists
-                nouns.get(noun).put(verb, response);
+                this.nouns.get(noun).put(verb, response);
             } else {
                 // create new noun before adding the verb that should be added to it
                 Map<String, String> verbResponse = new HashMap<>();
                 verbResponse.put(verb, response);
-                nouns.put(noun, verbResponse);
+                this.nouns.put(noun, verbResponse);
             }
             // Make sure the verb is included in the overall stage verb list
             addVerb(verb);
         }
 
         public String getResponse(String noun, String verb) {
-            if (nouns.containsKey(noun) && nouns.get(noun).containsKey(verb)) {
-                return nouns.get(noun).get(verb);
+            if (this.nouns.containsKey(noun) && this.nouns.get(noun).containsKey(verb)) {
+                return this.nouns.get(noun).get(verb);
             }
             // This message should not appear as the parsed text shouldn't fail the if statement
             // Mainly as precaution
@@ -128,17 +280,44 @@ public class Model {
         }
 
         public void removeNoun(String noun) {
-            nouns.remove(noun);
+            if (this.nouns.containsKey(noun)) {
+                Set<String> verbsToRemove = this.nouns.get(noun).keySet();
+                nouns.remove(noun);
+
+                // check if the remaining verbs are used by any other nouns
+                for (String verb : verbsToRemove) {
+                    boolean verbIsUsed = false;
+                    // iterate through the remaining nouns
+                    for (Map<String, String> verbMap : this.nouns.values()) {
+                        if (verbMap.containsKey(verb)) {
+                            verbIsUsed = true;
+                            break;
+                        }
+                    }
+
+                    // Remove the verb if it is not used elsewhere
+                    if (!verbIsUsed) {
+                        this.verbs.remove(verb);
+                    }
+                }
+            }
         }
 
         public void removeVerbFromNoun(String noun, String verb) {
-            if (nouns.containsKey(noun)) {
-                nouns.get(noun).remove(verb);
+            if (this.nouns.containsKey(noun)) {
+                Map<String, String> verbMap = this.nouns.get(noun);
+                verbMap.remove(verb);
+
+                // makes sure the remaining nouns all have actual available actions
+                if (verbMap.isEmpty()) {
+                    removeNoun(noun);
+                }
             }
         }
     }
 
     public class TextParser {
+        // TODO: The sets are not updated along with the stage
         private Set<String> verbs;
         private Set<String> nouns;
 
@@ -162,14 +341,14 @@ public class Model {
             String userNoun = "not found";
 
             for (String word : words) {
-                if (nouns.contains(word)) {
+                if (this.nouns.contains(word)) {
                     userNoun = word;
                     break;
                 }
             }
 
             for (String word : words) {
-                if (verbs.contains(word)) {
+                if (this.verbs.contains(word)) {
                     userVerb = word;
                     break;
                 }

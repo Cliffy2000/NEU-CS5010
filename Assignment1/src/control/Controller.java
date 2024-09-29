@@ -11,6 +11,7 @@ public class Controller {
 
     public Controller() {
         userInput = new Scanner(System.in);
+        this.model = new Model();
     }
 
     public void run() {
