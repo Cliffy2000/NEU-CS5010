@@ -11,6 +11,8 @@ public class Controller {
     Model model = new Model();
     View view = new View();
 
+    boolean hacks = false; // hacks to show nouns and verbs before each player entry
+
     public Controller() {
         this.userInput = new Scanner(System.in);
         this.model = new Model();
@@ -21,21 +23,36 @@ public class Controller {
         boolean gameRunning = true;
         view.gameStart();
 
+        this.view.askHacks();
+        String hacksInput = this.userInput.nextLine();
+        if (hacksInput.equals("enable hacks")) {
+            this.view.confirmHacks();
+        }
+
+        this.view.gameSetting();
+        // The main game loop
         while (gameRunning) {
-            System.out.println(this.model.getCurrentStage().getVerbs());
-            System.out.println(this.model.getCurrentStage().getNouns().keySet());
+            if (hacksInput.equals("enable hacks")) {
+                System.out.print("Verbs: ");
+                System.out.println(this.model.getCurrentStage().getVerbs());
+                System.out.print("Nouns: ");
+                System.out.println(this.model.getCurrentStage().getNouns().keySet());
+            }
 
             String input = this.userInput.nextLine();
             String verb = (this.model.parseInput(input))[0], noun = (this.model.parseInput(input))[1];
 
-            if (verb.equals("not found") || noun.equals("not found")) {
-                this.view.invalidInput();
+            if (noun.equals("not found")) {
+                this.view.invalidNoun();
+            } else if (verb.equals("not found")) {
+                this.view.invalidVerb();
             } else {
                 String response = this.model.getResponse(noun, verb);
                 this.view.printResponse(response);
             }
             this.model.action(noun, verb);
 
+            // Checks if the player can move to the next stage
             switch (this.model.getProgression()) {
                 case 0:
                     this.view.stage1To2();
@@ -48,6 +65,7 @@ public class Controller {
                     break;
             }
 
+            // updates the text parser to the latest sets of verbs and nouns
             this.model.getTextParser().setVerbs((new HashSet<>(this.model.getCurrentStage().getVerbs())));
             this.model.getTextParser().setNouns(this.model.getCurrentStage().getNouns().keySet());
         }

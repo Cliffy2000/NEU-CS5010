@@ -206,7 +206,7 @@ public class Model {
         }
 
         // travel enough distance to reach the next stage
-        if (this.flag_travelDistance >= 40) {
+        if (this.flag_travelDistance >= 20) {
             this.flag_stage2Complete = true;
         }
     }
