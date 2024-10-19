@@ -1,7 +1,8 @@
 package library;
 
-import item.*;
-
+/**
+ * The Library class stores all the recipes that have been added to the brewery. It supports a query by name method to look up existing recipes.
+ */
 public class Library {
     private Recipe[] recipeList;
     private int recipeCount;
@@ -11,6 +12,10 @@ public class Library {
         this.recipeCount = 0;
     }
 
+    /**
+     * Adds a new recipe to the library. The recipe would include the name of the drink, as well as names and quantities of various ingredients.
+     * @param recipe A Recipe object
+     */
     public void addRecipe(Recipe recipe) {
         // Creates a larger array to store recipes if the current one is full
         if (this.recipeCount >= this.recipeList.length) {
@@ -28,6 +33,11 @@ public class Library {
         System.out.printf("The recipe for %s has been added to the library.\n", recipe.getName());
     }
 
+    /**
+     * Looks up recipes by the drink name.
+     * @param recipeName The name of the drink made in the recipe.
+     * @return A Recipe object corresponding to the name of the drink, and null if no recipe is found.
+     */
     public Recipe queryRecipe(String recipeName) {
         for (int i = 0; i < this.recipeCount; i++) {
             if (this.recipeList[i].getName().equals(recipeName)) {

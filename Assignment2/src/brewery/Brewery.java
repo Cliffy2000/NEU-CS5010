@@ -1,9 +1,3 @@
-/**
- * The Brewery class is responsible for the overall flow of making drinks and managing the inventory and library. It also contains a scenario for a brewery with recipes and orders to be filled.
- *
- * @author Yichen (Cliff) Yang
- */
-
 package brewery;
 
 import item.Item;
@@ -11,6 +5,11 @@ import production.*;
 import inventory.*;
 import library.*;
 
+/**
+ * The Brewery class is responsible for the overall flow of making drinks and managing the inventory and library. It also contains a scenario for a brewery with recipes and orders to be filled.
+ *
+ * @author Yichen (Cliff) Yang
+ */
 public class Brewery {
     private Production production;
     private Inventory inventory;

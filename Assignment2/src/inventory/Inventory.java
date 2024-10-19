@@ -1,13 +1,10 @@
-/**
- *
- *
- */
-
-
 package inventory;
 
 import item.*;
 
+/**
+ * The inventory class keeps track of both the available ingredients and the drinks that have been produced. The class contains methods of retrieving the information and changing it.
+ */
 public class Inventory {
     private Item[] drinkInventory;
     private int drinkTypeCount;
@@ -21,6 +18,11 @@ public class Inventory {
         this.ingredientTypeCount = 0;
     }
 
+    /**
+     * Getter function to look up the quantity of a specific drink
+     * @param drinkName the name of the drink as a String
+     * @return an integer as the count
+     */
     public int getDrinkCount(String drinkName) {
         for (int i = 0; i < this.drinkTypeCount; i++) {
             if (this.drinkInventory[i].getName().equals(drinkName)) {
@@ -30,6 +32,11 @@ public class Inventory {
         return 0;
     }
 
+    /**
+     * Updates the inventory by changing the quantity of a drink if it is already in the inventory, or adds is to the inventory before setting the count.
+     * @param drinkName The name of the drink as a string
+     * @param delta The change in quantity
+     */
     public void updateDrink(String drinkName, int delta) {
         int index = -1;
         for (int i = 0; i < this.drinkTypeCount; i++) {
@@ -59,6 +66,9 @@ public class Inventory {
     }
 
 
+    /**
+     * Prints out the current drinks in the inventory as a table
+     */
     public void printDrinkInventory() {
         if (this.drinkTypeCount == 0) {
             System.out.println("The drink inventory in empty.");
@@ -74,6 +84,11 @@ public class Inventory {
     }
 
 
+    /**
+     * Looks up the quantity of a specific ingredient in the inventory
+     * @param ingredientName the name of the ingredient as a string
+     * @return an integer representing the quantity of the ingredient
+     */
     public int getIngredientCount(String ingredientName) {
         for (int i = 0; i < this.ingredientTypeCount; i++) {
             if (this.ingredientInventory[i].getName().equals(ingredientName)) {
@@ -83,6 +98,11 @@ public class Inventory {
         return 0;
     }
 
+    /**
+     * This checks the inventory for the ingredients needed for a drink. It would make purchases if there isn't enough, before subtracting the needed amount from the inventory. This function takes into account the number of drinks that is made.
+     * @param ingredient An Item that represents the ingredient, the count in this Item is the quantity required in the recipe.
+     * @param multiple An integer that represents the multiplication factor on the ingredient quantities, this is usually the number of drinks to be made.
+     */
     public void prepareIngredient(Item ingredient, int multiple) {
         int index = -1;
         // Find the ingredient in the inventory
@@ -110,6 +130,11 @@ public class Inventory {
         updateIngredient(ingredient.getName(), -ingredient.getCount() * multiple);     // negative to reduce count in inventory
     }
 
+    /**
+     * Updates the ingredient inventory, adding ingredients if there are not present in the inventory before changing the count
+     * @param ingredientName the name of the ingredient as a string
+     * @param delta the change in quantity as an integer
+     */
     public void updateIngredient(String ingredientName, int delta) {
         int index = -1;
         for (int i = 0; i < this.ingredientTypeCount; i++) {
@@ -138,6 +163,9 @@ public class Inventory {
         }
     }
 
+    /**
+     * Prints out the current ingredient inventory as a table
+     */
     public void printIngredientInventory() {
         if (this.ingredientTypeCount == 0) {
             System.out.println("The ingredient inventory in empty.");
