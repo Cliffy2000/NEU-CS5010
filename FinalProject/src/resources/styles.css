@@ -1,0 +1,31 @@
+.monthView-scrollPane {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.monthView-dayCell {
+    -fx-border-color: lightgray;
+    -fx-border-width: 2;
+    -fx-border-insets: 0;
+    -fx-padding: 0;
+}
+
+.monthView-dayCell .dateLabel {
+    -fx-font-size: 16;
+    -fx-text-alignment: center;
+}
+
+.monthView-dayCell-today {
+    -fx-border-color: gray;
+    -fx-border-width: 3;
+}
+
+.monthView-dayCell-today .dateLabel {
+    -fx-font-weight: bold;
+}
+
+.monthView-dayCell:hover {
+    -fx-background-color: lightblue;
+}
